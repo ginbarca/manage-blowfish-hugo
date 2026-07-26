@@ -1,0 +1,64 @@
+name: Contributors Sync
+
+on:
+  pull_request:
+    types:
+      - closed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: contributors-sync
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install repository dependencies
+        run: npm ci
+
+      - name: Regenerate contributors
+        run: npm run contributors
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Validate generated file
+        run: npm test
+
+      - name: Open or update contributors pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ github.token }}
+          branch: bot/update-contributors
+          delete-branch: true
+          add-paths: CONTRIBUTORS.md
+          commit-message: "docs: update contributors"
+          title: "docs: update contributors"
+          body: |
+            Updates `CONTRIBUTORS.md` from the GitHub contributor API after
+            merged community work. Bot accounts are excluded.

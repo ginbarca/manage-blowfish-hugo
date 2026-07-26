@@ -1,0 +1,88 @@
+name: Bug report
+description: Report incorrect skill guidance, audit behavior, or automation.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Remove credentials and private repository
+        content from every field.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Skill instructions
+        - Blowfish/Hugo reference
+        - Audit script
+        - Installation
+        - GitHub automation
+        - Translation
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: hugo-version
+    attributes:
+      label: Hugo version
+      placeholder: hugo v0.x.x+extended
+
+  - type: input
+    id: blowfish-version
+    attributes:
+      label: Blowfish version
+      placeholder: v2.x.x
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Blowfish installation method
+      options:
+        - Hugo Module
+        - Git submodule
+        - Manual theme copy
+        - Not applicable
+        - Unknown
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: List the smallest steps and relevant sanitized configuration.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and pull requests.
+          required: true
+        - label: I removed credentials and private data.
+          required: true
+

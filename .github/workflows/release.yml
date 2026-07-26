@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install repository dependencies
+        run: npm ci
+
+      - name: Validate release source
+        run: npm test
+
+      - name: Package installable skill
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          archive="manage-blowfish-hugo-${TAG_NAME}.zip"
+          (
+            cd skills
+            zip -r "../${archive}" manage-blowfish-hugo
+          )
+          sha256sum "${archive}" > "${archive}.sha256"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          gh release create "${TAG_NAME}" \
+            "manage-blowfish-hugo-${TAG_NAME}.zip" \
+            "manage-blowfish-hugo-${TAG_NAME}.zip.sha256" \
+            --verify-tag \
+            --generate-notes \
+            --title "Manage Blowfish Hugo ${TAG_NAME}"

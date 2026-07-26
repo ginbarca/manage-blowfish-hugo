@@ -1,0 +1,18 @@
+changelog:
+  categories:
+    - title: Features
+      labels:
+        - enhancement
+    - title: Fixes
+      labels:
+        - bug
+    - title: Documentation and translations
+      labels:
+        - documentation
+    - title: Upstream compatibility
+      labels:
+        - upstream
+    - title: Other changes
+      labels:
+        - "*"
+

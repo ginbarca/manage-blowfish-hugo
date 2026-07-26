@@ -1,0 +1,18 @@
+{
+  "pull_request": {
+    "number": 7,
+    "title": "docs: clarify module setup",
+    "body": "Clarifies the official Blowfish module installation flow.",
+    "draft": false,
+    "user": {
+      "login": "example-contributor"
+    },
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "docs/module-setup"
+    }
+  }
+}
+

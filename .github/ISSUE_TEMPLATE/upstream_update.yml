@@ -1,0 +1,42 @@
+name: Upstream update
+description: Report a Blowfish or Hugo release/documentation change.
+title: "upstream: "
+labels:
+  - upstream
+body:
+  - type: dropdown
+    id: project
+    attributes:
+      label: Upstream project
+      options:
+        - Blowfish
+        - Hugo
+        - Hugo documentation
+        - Multiple
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Release or revision
+      placeholder: v2.x.x or commit SHA
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: Official source URL
+      placeholder: https://github.com/.../releases/tag/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Expected skill impact
+      description: Which instructions, references, examples, or tests may change?
+    validations:
+      required: true
+

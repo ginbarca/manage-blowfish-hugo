@@ -1,0 +1,22 @@
+{
+  "name": "manage-blowfish-hugo-repository",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Repository tooling for the Manage Blowfish Hugo Agent Skill",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate-repo.mjs",
+    "test:audit": "python3 skills/manage-blowfish-hugo/scripts/audit_blowfish_project.py tests/fixtures/blowfish-module --json",
+    "test": "npm run validate && npm run test:audit",
+    "sync:upstream": "node scripts/check-upstream.mjs --write",
+    "check:upstream": "node scripts/check-upstream.mjs --check",
+    "contributors": "node scripts/update-contributors.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "yaml": "^2.8.1"
+  }
+}
+

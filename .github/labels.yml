@@ -1,0 +1,22 @@
+- name: bug
+  color: d73a4a
+  description: Something is not working
+- name: enhancement
+  color: a2eeef
+  description: New or improved capability
+- name: documentation
+  color: 0075ca
+  description: Documentation or translation
+- name: upstream
+  color: 5319e7
+  description: Blowfish or Hugo compatibility update
+- name: security
+  color: b60205
+  description: Requires careful private triage
+- name: dependencies
+  color: 0366d6
+  description: Dependency update
+- name: triage
+  color: ededed
+  description: Needs maintainer classification
+

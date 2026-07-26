@@ -1,0 +1,12 @@
+interface:
+  display_name: Manage Blowfish Hugo
+  short_description: Set up, customize, and maintain Blowfish sites
+  default_prompt: Use $manage-blowfish-hugo to set up or safely customize my Hugo
+    site with Blowfish.
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true

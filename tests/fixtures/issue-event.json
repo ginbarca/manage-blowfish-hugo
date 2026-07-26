@@ -1,0 +1,12 @@
+{
+  "issue": {
+    "number": 42,
+    "title": "Audit does not detect my Blowfish module",
+    "body": "Hugo v0.164.0 and Blowfish v2.104.0. The theme is installed with a Hugo Module.",
+    "user": {
+      "login": "example-contributor"
+    },
+    "labels": []
+  }
+}
+

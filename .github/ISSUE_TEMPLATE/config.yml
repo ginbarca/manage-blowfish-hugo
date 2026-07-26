@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Blowfish documentation
+    url: https://blowfish.page/docs/
+    about: Check official theme behavior before reporting an upstream question.
+  - name: Hugo documentation
+    url: https://gohugo.io/documentation/
+    about: Check Hugo configuration, templates, modules, and deployment behavior.
+  - name: Security report
+    url: https://github.com/ginbarca/manage-blowfish-hugo/security/advisories/new
+    about: Report vulnerabilities privately.
+

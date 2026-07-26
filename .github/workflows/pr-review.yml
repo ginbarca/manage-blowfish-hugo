@@ -1,0 +1,118 @@
+name: Pull Request Review
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  models: read
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.actor != 'dependabot[bot]' &&
+      github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out trusted default branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Fetch bounded pull-request patches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh api \
+            --paginate \
+            --slurp \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
+            --jq 'flatten' > pr-files.json
+
+      - name: Build bounded review prompt
+        run: node scripts/build-review-prompt.mjs pr "$GITHUB_EVENT_PATH" pr-files.json pr-prompt.txt
+
+      - name: Review pull request with GitHub Models
+        id: ai_review
+        continue-on-error: true
+        uses: actions/ai-inference@v2
+        with:
+          prompt-file: pr-prompt.txt
+          max-completion-tokens: 1400
+          temperature: 0.1
+
+      - name: Create or update advisory review
+        uses: actions/github-script@v9
+        env:
+          AI_OUTCOME: ${{ steps.ai_review.outcome }}
+          RESPONSE_FILE: ${{ steps.ai_review.outputs.response-file }}
+        with:
+          script: |
+            const fs = require("fs");
+            const marker = "<!-- manage-blowfish-hugo:pr-review -->";
+            let review;
+            if (
+              process.env.AI_OUTCOME === "success" &&
+              process.env.RESPONSE_FILE &&
+              fs.existsSync(process.env.RESPONSE_FILE)
+            ) {
+              review = fs.readFileSync(process.env.RESPONSE_FILE, "utf8").trim();
+            } else {
+              review = [
+                "## Automated review checklist",
+                "",
+                "AI-assisted review is temporarily unavailable. Please verify:",
+                "",
+                "- `npm test` passes.",
+                "- Agent Skills frontmatter and local links are valid.",
+                "- Version-sensitive claims cite official sources.",
+                "- English and Vietnamese public docs remain aligned.",
+                "- Workflow permissions are minimal.",
+                "- No untrusted contributor code is executed by review automation."
+              ].join("\n");
+            }
+
+            const body = `${marker}\n> Advisory bot review — this is not an approval or merge decision.\n\n${review}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+            const existing = comments.find(
+              comment =>
+                comment.user?.login === "github-actions[bot]" &&
+                comment.body?.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body
+              });
+            }

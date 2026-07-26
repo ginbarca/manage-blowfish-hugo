@@ -1,0 +1,4 @@
+baseURL = "https://blowfish-fixture.test/"
+defaultContentLanguage = "en"
+title = "Blowfish Fixture"
+

@@ -1,0 +1,147 @@
+name: Issue Review
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+      - reopened
+
+permissions:
+  contents: read
+  issues: write
+  models: read
+
+concurrency:
+  group: issue-review-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out trusted default branch
+        uses: actions/checkout@v6
+
+      - name: Apply initial triage label
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const definitions = {
+              bug: "d73a4a",
+              enhancement: "a2eeef",
+              documentation: "0075ca",
+              upstream: "5319e7",
+              security: "b60205",
+              triage: "ededed"
+            };
+            const text = `${context.payload.issue.title}\n${context.payload.issue.body || ""}`.toLowerCase();
+            let label = "triage";
+            if (/\b(security|vulnerability|credential|secret|exploit)\b/.test(text)) {
+              label = "security";
+            } else if (/\b(blowfish|hugo).*(release|version|upstream|update)\b/.test(text)) {
+              label = "upstream";
+            } else if (/\b(readme|documentation|docs|translation|vietnamese|english)\b/.test(text)) {
+              label = "documentation";
+            } else if (/\b(feature|enhancement|proposal|request)\b/.test(text)) {
+              label = "enhancement";
+            } else if (/\b(bug|error|fail|broken|exception|traceback)\b/.test(text)) {
+              label = "bug";
+            }
+
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label
+              });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label,
+                color: definitions[label],
+                description: "Managed by repository automation"
+              });
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: [label]
+            });
+
+      - name: Build bounded review prompt
+        run: node scripts/build-review-prompt.mjs issue "$GITHUB_EVENT_PATH" issue-prompt.txt
+
+      - name: Review issue with GitHub Models
+        id: ai_review
+        continue-on-error: true
+        uses: actions/ai-inference@v2
+        with:
+          prompt-file: issue-prompt.txt
+          max-completion-tokens: 900
+          temperature: 0.1
+
+      - name: Create or update advisory review
+        uses: actions/github-script@v9
+        env:
+          AI_OUTCOME: ${{ steps.ai_review.outcome }}
+          RESPONSE_FILE: ${{ steps.ai_review.outputs.response-file }}
+        with:
+          script: |
+            const fs = require("fs");
+            const marker = "<!-- manage-blowfish-hugo:issue-review -->";
+            let review;
+            if (
+              process.env.AI_OUTCOME === "success" &&
+              process.env.RESPONSE_FILE &&
+              fs.existsSync(process.env.RESPONSE_FILE)
+            ) {
+              review = fs.readFileSync(process.env.RESPONSE_FILE, "utf8").trim();
+            } else {
+              review = [
+                "## Automated triage checklist",
+                "",
+                "AI-assisted review is temporarily unavailable. A maintainer can still triage this issue using:",
+                "",
+                "- Hugo and Blowfish versions.",
+                "- Installation method: Hugo Module, submodule, or manual theme.",
+                "- Minimal reproduction and expected/actual behavior.",
+                "- Sanitized logs and relevant configuration paths.",
+                "- Official upstream documentation or release note involved."
+              ].join("\n");
+            }
+
+            const body = `${marker}\n> Advisory bot review — maintainers make the final decision.\n\n${review}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              per_page: 100
+            });
+            const existing = comments.find(
+              comment =>
+                comment.user?.login === "github-actions[bot]" &&
+                comment.body?.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                body
+              });
+            }
