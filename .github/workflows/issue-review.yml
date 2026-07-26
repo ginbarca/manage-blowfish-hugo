@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Check out trusted default branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Apply initial triage label
         uses: actions/github-script@v9
