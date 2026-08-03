@@ -81,7 +81,7 @@ jobs:
       - name: Review issue with GitHub Models
         id: ai_review
         continue-on-error: true
-        uses: actions/ai-inference@v2
+        uses: actions/ai-inference@v3
         with:
           prompt-file: issue-prompt.txt
           max-completion-tokens: 900
