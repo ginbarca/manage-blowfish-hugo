@@ -4,33 +4,32 @@
     "blowfish": {
       "release": {
         "repository": "nunocoracao/blowfish",
-        "tag": "v2.104.0",
-        "url": "https://github.com/nunocoracao/blowfish/releases/tag/v2.104.0",
-        "publishedAt": null
+        "tag": "v3.10.0",
+        "url": "https://github.com/nunocoracao/blowfish/releases/tag/v3.10.0",
+        "publishedAt": "2026-11-11T20:13:16Z"
       },
       "documentation": {
         "repository": "nunocoracao/blowfish",
         "path": "exampleSite/content/docs",
-        "sha": null,
-        "url": null,
-        "committedAt": null
+        "sha": "09746c5e66c7672081980e0fd19820c4906b8bd5",
+        "url": "https://github.com/nunocoracao/blowfish/commit/09746c5e66c7672081980e0fd19820c4906b8bd5",
+        "committedAt": "2026-11-11T20:09:36Z"
       }
     },
     "hugo": {
       "release": {
         "repository": "gohugoio/hugo",
-        "tag": "v0.164.0",
-        "url": "https://github.com/gohugoio/hugo/releases/tag/v0.164.0",
-        "publishedAt": null
+        "tag": "v0.170.1",
+        "url": "https://github.com/gohugoio/hugo/releases/tag/v0.170.1",
+        "publishedAt": "2026-11-17T17:08:14Z"
       },
       "documentation": {
         "repository": "gohugoio/hugoDocs",
         "path": "content",
-        "sha": null,
-        "url": null,
-        "committedAt": null
+        "sha": "94d3db6cf533282a42760895f2b6857ea26bddd4",
+        "url": "https://github.com/gohugoio/hugoDocs/commit/94d3db6cf533282a42760895f2b6857ea26bddd4",
+        "committedAt": "2026-11-23T00:19:36Z"
       }
     }
   }
 }
-
